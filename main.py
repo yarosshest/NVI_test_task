@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
 from typing import Callable
-
-from PyQt6.QtCore import QSize, Qt, pyqtSignal
+from PyQt6.QtCore import QSize, QPointF, Qt
+from PyQt6.QtGui import QPainter, QColor
 from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
 from PyQt6.QtPdfWidgets import QPdfView
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QPushButton, QVBoxLayout, QWidget, QHBoxLayout
@@ -25,33 +25,20 @@ class ButtonPage(QPushButton):
         self.clicked.connect(new_page)
 
 
+class PdfView(QPdfView):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setPageMode(QPdfView.PageMode.SinglePage)
+
+
 class MainWindow(QMainWindow):
     path: Path = ''
     filename_edit: str = ''
 
     page: int = 0
-    page_navigator: QPdfPageNavigator = None
 
     document: QPdfDocument = None
     view: QPdfView = None
-
-    def create_button_choose_pdf(self) -> QPushButton:
-        button = QPushButton()
-        button.setCheckable(True)
-        button.setText("Загрузить")
-        button.clicked.connect(self.choose_pdf)
-
-        self.document = QPdfDocument(self)
-        return button
-
-    def create_button_left(self) -> QPushButton:
-        button = QPushButton()
-        button.setCheckable(True)
-        button.setText("<")
-        button.clicked.connect(self.choose_pdf)
-
-        self.document = QPdfDocument(self)
-        return button
 
     def choose_pdf(self):
         dialog = QFileDialog()
@@ -65,21 +52,19 @@ class MainWindow(QMainWindow):
             self.document.load(self.filename_edit)
             self.page = 0
 
+            self.view.setDocument(self.document)
+
             self.view.show()
 
-    def create_pdf_view(self) -> QPdfView:
-        view = QPdfView(None)
-        view.setPageMode(QPdfView.PageMode.SinglePage)
-        view.setDocument(self.document)
-        self.page_navigator = view.pageNavigator()
-        return view
-
     def left_page(self):
-        self.page_navigator.back()
-        self.page_navigator.update()
+        nav = self.view.pageNavigator()
+        if nav.currentPage() > 0:
+            nav.jump(nav.currentPage() - 1, QPointF(), nav.currentZoom())
 
     def right_page(self):
-        self.page_navigator.forward()
+        nav = self.view.pageNavigator()
+        if nav.currentPage() < self.view.document().pageCount() - 1:
+            nav.jump(nav.currentPage() + 1, QPointF(), nav.currentZoom())
 
     def create_upper_layout(self) -> QHBoxLayout:
         upper_layout = QHBoxLayout()
@@ -92,14 +77,9 @@ class MainWindow(QMainWindow):
     def _init_variables(self):
         self.document = QPdfDocument(self)
 
-        view = QPdfView(None)
-        view.setPageMode(QPdfView.PageMode.SinglePage)
-        view.setDocument(self.document)
-
     def __init__(self):
         super().__init__()
 
-        self.page_navigator = None
         self._init_variables()
 
         self.setWindowTitle("PDF App")
@@ -107,10 +87,14 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout()
         upper_layout = self.create_upper_layout()
 
-        self.setFixedSize(QSize(1000, 500))
+        self.frameGeometry().width()
+        self.frameGeometry().height()
+
+        self.resize(QSize(1000, 1000))
 
         main_layout.addLayout(upper_layout)
-        self.view = self.create_pdf_view()
+
+        self.view = PdfView(self)
         main_layout.addWidget(self.view)
 
         widget = QWidget()
