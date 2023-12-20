@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from typing import Callable
 from PyQt6.QtCore import QSize, QPointF, Qt
-from PyQt6.QtGui import QPainter, QColor
+from PyQt6.QtGui import QPainter, QColor, QPalette, QBrush, QPen
 from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
 from PyQt6.QtPdfWidgets import QPdfView
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QPushButton, QVBoxLayout, QWidget, QHBoxLayout
@@ -29,6 +29,25 @@ class PdfView(QPdfView):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setPageMode(QPdfView.PageMode.SinglePage)
+
+
+class Overlay(QWidget):
+    def __init__(self, parent=None):
+        super(Overlay, self).__init__(parent)
+
+        palette = QPalette(self.palette())
+        palette.setColor(palette.Background, Qt.transparent)
+
+        self.setPalette(palette)
+
+    def paintEvent(self, event):
+        painter = QPainter()
+        painter.begin(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.fillRect(event.rect(), QBrush(QColor(255, 255, 255, 127)))
+        painter.drawLine(self.width() / 8, self.height() / 8, 7 * self.width() / 8, 7 * self.height() / 8)
+        painter.drawLine(self.width() / 8, 7 * self.height() / 8, 7 * self.width() / 8, self.height() / 8)
+        painter.setPen(QPen(Qt.NoPen))
 
 
 class MainWindow(QMainWindow):
