@@ -2,10 +2,12 @@ import sys
 from pathlib import Path
 from typing import Callable
 from PyQt6.QtCore import QSize, QPointF, Qt
-from PyQt6.QtGui import QPainter, QColor, QPalette, QBrush, QPen
+from PyQt6.QtGui import QPainter, QColor, QPalette, QBrush, QPen, QMouseEvent
 from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
 from PyQt6.QtPdfWidgets import QPdfView
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QPushButton, QVBoxLayout, QWidget, QHBoxLayout
+
+from Widgets.PdfView import PdfView, DrawablePdf
 
 
 class ButtonChoosePdf(QPushButton):
@@ -25,31 +27,6 @@ class ButtonPage(QPushButton):
         self.clicked.connect(new_page)
 
 
-class PdfView(QPdfView):
-    def __init__(self, parent: QWidget):
-        super().__init__(parent)
-        self.setPageMode(QPdfView.PageMode.SinglePage)
-
-
-class Overlay(QWidget):
-    def __init__(self, parent=None):
-        super(Overlay, self).__init__(parent)
-
-        palette = QPalette(self.palette())
-        palette.setColor(palette.Background, Qt.transparent)
-
-        self.setPalette(palette)
-
-    def paintEvent(self, event):
-        painter = QPainter()
-        painter.begin(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.fillRect(event.rect(), QBrush(QColor(255, 255, 255, 127)))
-        painter.drawLine(self.width() / 8, self.height() / 8, 7 * self.width() / 8, 7 * self.height() / 8)
-        painter.drawLine(self.width() / 8, 7 * self.height() / 8, 7 * self.width() / 8, self.height() / 8)
-        painter.setPen(QPen(Qt.NoPen))
-
-
 class MainWindow(QMainWindow):
     path: Path = ''
     filename_edit: str = ''
@@ -57,7 +34,7 @@ class MainWindow(QMainWindow):
     page: int = 0
 
     document: QPdfDocument = None
-    view: QPdfView = None
+    view: DrawablePdf = None
 
     def choose_pdf(self):
         dialog = QFileDialog()
@@ -71,30 +48,21 @@ class MainWindow(QMainWindow):
             self.document.load(self.filename_edit)
             self.page = 0
 
-            self.view.setDocument(self.document)
+            self.view.pdf.setDocument(self.document)
 
-            self.view.show()
-
-    def left_page(self):
-        nav = self.view.pageNavigator()
-        if nav.currentPage() > 0:
-            nav.jump(nav.currentPage() - 1, QPointF(), nav.currentZoom())
-
-    def right_page(self):
-        nav = self.view.pageNavigator()
-        if nav.currentPage() < self.view.document().pageCount() - 1:
-            nav.jump(nav.currentPage() + 1, QPointF(), nav.currentZoom())
+            self.view.pdf.show()
 
     def create_upper_layout(self) -> QHBoxLayout:
         upper_layout = QHBoxLayout()
         upper_layout.addWidget(ButtonChoosePdf(self.choose_pdf))
-        upper_layout.addWidget(ButtonPage("<", self.left_page))
-        upper_layout.addWidget(ButtonPage(">", self.right_page))
+        upper_layout.addWidget(ButtonPage("<", self.view.pdf.beck_page))
+        upper_layout.addWidget(ButtonPage(">", self.view.pdf.forward_page))
 
         return upper_layout
 
     def _init_variables(self):
         self.document = QPdfDocument(self)
+        self.view = DrawablePdf(self)
 
     def __init__(self):
         super().__init__()
@@ -113,7 +81,6 @@ class MainWindow(QMainWindow):
 
         main_layout.addLayout(upper_layout)
 
-        self.view = PdfView(self)
         main_layout.addWidget(self.view)
 
         widget = QWidget()
