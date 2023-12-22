@@ -17,7 +17,7 @@ class Overlay(QWidget):
     def __init__(self, parent: PdfView):
         super(Overlay, self).__init__(parent)
 
-        # parent.nav.currentPageChanged.connect(self.clear_rect)
+        parent.nav.currentPageChanged.connect(self.clear_rect)
 
         self.setAutoFillBackground(False)
         self.pen.setWidth(3)
@@ -28,11 +28,16 @@ class Overlay(QWidget):
         self.end_rec = None
         self.left_mouse_pressed = False
 
+    def update_end(self, event: QMouseEvent):
+        if (0 < event.pos().x() < self.size().width() and
+                0 < event.pos().y() < self.size().height()):
+            self.end_rec = QPoint(event.pos().x(), event.pos().y())
+            self.update()
+
     def mouseMoveEvent(self, event: QMouseEvent):
         if self.parent().doc_loaded:
             if self.left_mouse_pressed:
-                self.end_rec = QPoint(event.pos().x(), event.pos().y())
-                self.update()
+                self.update_end(event)
 
     def mousePressEvent(self, event: QMouseEvent):
         if self.parent().doc_loaded:
@@ -45,7 +50,9 @@ class Overlay(QWidget):
         if self.parent().doc_loaded:
             if event.button() == Qt.MouseButton.LeftButton:
                 self.left_mouse_pressed = False
-                self.end_rec = QPoint(event.pos().x(), event.pos().y())
+                self.update_end(event)
+                self.parent().drawer.draw_rect(self.parent().nav.currentPage(), self.begin_rec, self.end_rec)
+                self.parent().update_document()
 
     def paintEvent(self, event: QPaintEvent):
         if self.end_rec:
