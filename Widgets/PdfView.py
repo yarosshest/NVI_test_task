@@ -12,10 +12,15 @@ class PdfView(QPdfView):
 
     def __init__(self, parent: QWidget):
         super().__init__(parent)
+
         self.document = QPdfDocument(self)
         self.setPageMode(QPdfView.PageMode.SinglePage)
         self.setZoomMode(QPdfView.ZoomMode.FitToWidth)
         self.setDocumentMargins(QMargins(0, 0, 0, 0))
+
+        self.nav = self.pageNavigator()
+
+        self.resize(self.nav.pa)
 
     def set_document(self, filename: str):
         self.filename = filename
@@ -27,11 +32,9 @@ class PdfView(QPdfView):
         self.show()
 
     def beck_page(self):
-        nav = self.pageNavigator()
-        if nav.currentPage() > 0:
-            nav.jump(nav.currentPage() - 1, QPointF(), nav.currentZoom())
+        if self.nav.currentPage() > 0:
+            self.nav.jump(self.nav.currentPage() - 1, QPointF(), self.nav.currentZoom())
 
     def forward_page(self):
-        nav = self.pageNavigator()
-        if nav.currentPage() < self.document.pageCount() - 1:
-            nav.jump(nav.currentPage() + 1, QPointF(), nav.currentZoom())
+        if self.nav.currentPage() < self.document.pageCount() - 1:
+            self.nav.jump(self.nav.currentPage() + 1, QPointF(), self.nav.currentZoom())

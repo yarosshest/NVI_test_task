@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.frameGeometry().width()
         self.frameGeometry().height()
 
-        self.resize(QSize(1000, 1000))
+        self.resize(QSize(300, 400))
 
         main_layout.addLayout(upper_layout)
 

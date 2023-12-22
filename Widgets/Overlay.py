@@ -16,13 +16,17 @@ class Overlay(QWidget):
 
     def __init__(self, parent: PdfView):
         super(Overlay, self).__init__(parent)
+
+        # parent.nav.currentPageChanged.connect(self.clear_rect)
+
         self.setAutoFillBackground(False)
-
         self.pen.setWidth(3)
-
         self.show()
 
-
+    def clear_rect(self):
+        self.begin_rec = None
+        self.end_rec = None
+        self.left_mouse_pressed = False
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if self.parent().doc_loaded:
