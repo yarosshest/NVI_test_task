@@ -1,8 +1,6 @@
-from PyQt6.QtCore import QPointF, Qt, QPoint, QRect
-from PyQt6.QtGui import QMouseEvent, QPaintEvent, QColor, QPalette, QPainter, QPen, QBrush
-from PyQt6.QtPdfWidgets import QPdfView
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.uic.Compiler.qtproxies import QtGui, QtCore
+from PyQt6.QtCore import Qt, QPoint, QRect
+from PyQt6.QtGui import QMouseEvent, QPaintEvent, QColor, QPainter, QPen
+from PyQt6.QtWidgets import QWidget
 
 from Widgets.DrawablePdf import PdfView
 

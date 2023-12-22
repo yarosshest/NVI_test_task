@@ -1,19 +1,16 @@
 import sys
-from pathlib import Path
 from typing import Callable
-from PyQt6.QtCore import QSize, QPointF, Qt
-from PyQt6.QtGui import QPainter, QColor, QPalette, QBrush, QPen, QMouseEvent
-from PyQt6.QtPdf import QPdfDocument, QPdfPageNavigator
-from PyQt6.QtPdfWidgets import QPdfView
+from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QPushButton, QVBoxLayout, QWidget, QHBoxLayout
 
-from Widgets.DrawablePdf import PdfView, DrawablePdf
+from Widgets.DrawablePdf import DrawablePdf
 
 
 class ButtonChoosePdf(QPushButton):
     def __init__(self, choose_pdf: Callable):
         super().__init__()
         self.setText("Загрузить")
+        self.setMaximumWidth(100)
         self.clicked.connect(choose_pdf)
 
 
@@ -22,6 +19,7 @@ class ButtonPage(QPushButton):
     def __init__(self, lable: str, new_page: Callable):
         super().__init__()
         self.setText(lable)
+        self.setMaximumWidth(100)
         self.clicked.connect(new_page)
 
 

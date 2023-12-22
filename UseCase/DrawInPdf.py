@@ -31,7 +31,6 @@ class PdfDrawer:
     def draw_rect(self, page_n: int, point_a: QPoint, point_b: QPoint):
         page = self.doc[page_n]
 
-        # page.draw_rect(Rect(point_a.x(), point_a.y(), point_b.x(), point_b.y()), color=(255, 0, 0), width=3)
         page.draw_rect(create_rect(point_a, point_b), width=3, color=getColor("red"))
 
         self.doc.save(self.filename, incremental=True, encryption=0)
